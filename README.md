@@ -2,7 +2,7 @@
 
 an app to familiarize myself with state management
 
-good practices to manage states
+good practices for managing states
 
 when to use provider vs stateful widget
 
