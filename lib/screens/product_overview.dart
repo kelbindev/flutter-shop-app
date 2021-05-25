@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shop_app/providers/cart.dart';
+import 'package:shop_app/widgets/badge.dart';
 
 import 'package:shop_app/widgets/products_grid.dart';
 
@@ -14,7 +17,6 @@ class ProductsOverview extends StatefulWidget {
 class _ProductsOverviewState extends State<ProductsOverview> {
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: Text('My Shop'),
@@ -23,10 +25,10 @@ class _ProductsOverviewState extends State<ProductsOverview> {
               onSelected: (filterOptions val) {
                 setState(() {
                   if (val == filterOptions.Favorite) {
-                 _showFavorites = true;
-                } else {
-                  _showFavorites = false;
-                }
+                    _showFavorites = true;
+                  } else {
+                    _showFavorites = false;
+                  }
                 });
               },
               icon: Icon(Icons.more_vert),
@@ -38,8 +40,17 @@ class _ProductsOverviewState extends State<ProductsOverview> {
                     PopupMenuItem(
                       child: const Text('Show All'),
                       value: filterOptions.All,
-                    )
-                  ])
+                    ),
+                  ]),
+          Consumer<Cart>(
+            builder: (_, _cart, ch) => Badge(
+              key: UniqueKey(),
+              child: ch == null ? Container() : ch,
+              value: _cart.itemCount.toString(),
+            ),
+            child:
+                IconButton(icon: Icon(Icons.shopping_cart), onPressed: () {}),
+          ),
         ],
       ),
       body: ProductGrid(_showFavorites),
