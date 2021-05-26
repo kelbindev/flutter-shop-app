@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_app/providers/cart.dart';
+import 'package:shop_app/screens/carts.dart';
 import 'package:shop_app/widgets/badge.dart';
+import 'package:shop_app/widgets/main_drawer.dart';
 
 import 'package:shop_app/widgets/products_grid.dart';
 
@@ -18,6 +20,7 @@ class _ProductsOverviewState extends State<ProductsOverview> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: MainDrawer(),
       appBar: AppBar(
         title: Text('My Shop'),
         actions: [
@@ -49,7 +52,11 @@ class _ProductsOverviewState extends State<ProductsOverview> {
               value: _cart.itemCount.toString(),
             ),
             child:
-                IconButton(icon: Icon(Icons.shopping_cart), onPressed: () {}),
+                IconButton(icon: Icon(Icons.shopping_cart), onPressed: () {
+                  Navigator.pushNamed(
+                    context, 
+                    Carts.routeName);
+                }),
           ),
         ],
       ),
