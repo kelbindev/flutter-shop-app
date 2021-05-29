@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shop_app/screens/carts.dart';
 import 'package:shop_app/screens/orders.dart';
+import 'package:shop_app/screens/user_products.dart';
 
 class MainDrawer extends StatelessWidget {
   @override
@@ -44,6 +45,7 @@ class MainDrawer extends StatelessWidget {
                     Navigator.of(context).pushNamed('/');
                   }
                 ),
+                Divider(),
                   buildListTile(
                   Icons.shopping_cart,
                   'Cart',
@@ -51,11 +53,20 @@ class MainDrawer extends StatelessWidget {
                     Navigator.of(context).pushNamed(Carts.routeName);
                   }
                 ),
+                Divider(),
                 buildListTile(
                   Icons.shopping_bag,
                   'Orders',
                   () {
                     Navigator.of(context).pushNamed(Orders.routeName);
+                  }
+                ),
+                Divider(),
+                buildListTile(
+                  Icons.edit,
+                  'Products',
+                  () {
+                    Navigator.of(context).pushReplacementNamed(UserProducts.routeName);
                   }
                 ),
               ],),

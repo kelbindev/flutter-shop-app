@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:shop_app/providers/product.dart';
 
 class Products with ChangeNotifier {
-  List<Product> _items = [Product(
+  List<Product> _items = [
+    Product(
       id: 'p1',
       title: 'Red Shirt',
       description: 'A red shirt - it is pretty red!',
@@ -33,7 +35,8 @@ class Products with ChangeNotifier {
       price: 49.99,
       imageUrl:
           'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
-    ),];
+    ),
+  ];
 
   // var _showFavoriteOnly = false;
 
@@ -45,12 +48,32 @@ class Products with ChangeNotifier {
     return _items.where((e) => e.isFavorite).toList();
   }
 
-  void addProduct(Product _newProduct){
-    _items.add(_newProduct);
+  Product getProductById(String productId) {
+    return _items.firstWhere((e) => e.id == productId);
+  }
+
+  void addProduct(Product _newProduct) {
+    final newProduct = Product(
+        id: 'p${(items.length + 1).toString()}',
+        title: _newProduct.title,
+        description: _newProduct.description,
+        price: _newProduct.price,
+        imageUrl: _newProduct.imageUrl);
+
+    _items.add(newProduct);
     notifyListeners();
   }
 
-  Product getProductById(String productId){
-    return _items.firstWhere((e) => e.id == productId);
+  void updateProduct(Product _editedProduct) {
+      final _prodIndex = _items.indexWhere((e) => e.id == _editedProduct.id);
+      if (_prodIndex > 0){
+      _items[_prodIndex] = _editedProduct;
+      notifyListeners();
+      }
+  }
+
+  void deleteProduct(String _productId){
+    _items.removeWhere((e) => e.id == _productId);
+    notifyListeners();
   }
 }

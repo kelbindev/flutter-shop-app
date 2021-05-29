@@ -9,16 +9,32 @@ class CartItemW extends StatelessWidget {
   final double price;
   final int qty;
 
-  CartItemW(this.id,this.productId, this.title, this.price, this.qty);
+  CartItemW(this.id, this.productId, this.title, this.price, this.qty);
 
   @override
   Widget build(BuildContext context) {
-    print(id + '_'+productId );
+    print(id + '_' + productId);
 
     return Dismissible(
       key: ValueKey(id),
+      confirmDismiss: (direction) {
+        return showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+                  title: Text('Confirmation'),
+                  content: Text('Remove item from cart?'),
+                  actions: [
+                    TextButton(onPressed: () {
+                      Navigator.of(ctx).pop(false);
+                    }, child: Text('No')),
+                    TextButton(onPressed: () {
+                      Navigator.of(ctx).pop(true);
+                    }, child: Text('Yes')),
+                  ],
+                ));
+      },
       direction: DismissDirection.endToStart,
-      onDismissed: (direction){
+      onDismissed: (direction) {
         Provider.of<Cart>(context, listen: false).removeItem(productId);
       },
       background: Container(
