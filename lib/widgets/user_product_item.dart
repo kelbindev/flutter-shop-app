@@ -10,6 +10,7 @@ class UserProductItem extends StatelessWidget {
   UserProductItem(this._product);
 
    showAlertDialog(BuildContext ctx) {
+     final scaffold = ScaffoldMessenger.of(ctx);
     AlertDialog alert = AlertDialog(
       title: Text("AlertDialog"),
       content: Text("Delete Selected Product?"),
@@ -20,10 +21,20 @@ class UserProductItem extends StatelessWidget {
             },
             child: Text('Cancel')),
         TextButton(
-            onPressed: () {
-              Provider.of<Products>(ctx, listen: false)
-                  .deleteProduct(_product.id);
+            onPressed: () async{
               Navigator.of(ctx).pop();
+              try
+              {
+              await Provider.of<Products>(ctx, listen: false)
+                  .deleteProduct(_product.id).then((_) {
+                  });
+              }
+              catch (ex)
+              {
+                scaffold.showSnackBar(
+                  SnackBar(content: Text(ex.toString()))
+                );
+              }
             },
             child: Text('Yes')),
       ],

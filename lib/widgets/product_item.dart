@@ -2,20 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_app/providers/cart.dart';
 import 'package:shop_app/providers/product.dart';
+import 'package:shop_app/providers/products.dart';
 import 'package:shop_app/screens/product_details.dart';
 
 class ProductItem extends StatelessWidget {
-  // final String id;
-  // final String title;
-  // final String imageUrl;
-  // final double price;
-
-  // ProductItem(this.id, this.title, this.imageUrl, this.price);
-
   @override
   Widget build(BuildContext context) {
     final _product = Provider.of<Product>(context, listen: false);
+    final _productsFunction = Provider.of<Products>(context, listen: false);
     final _cart = Provider.of<Cart>(context, listen: false);
+
+    final scaffold = ScaffoldMessenger.of(context);
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: GridTile(
@@ -33,10 +31,24 @@ class ProductItem extends StatelessWidget {
           },
         ),
         footer: GridTileBar(
-          leading: Consumer<Product>(
-            builder: (ctx, _product, _) => IconButton(
-              onPressed: () {
-                _product.toggleFavorite();
+          leading: Consumer<Products>(
+            builder: (ctx, _productsFunction, _) => IconButton(
+              onPressed: () async {
+                try {
+                  _productsFunction.toggleFavorite(
+                      _product.id, _product.isFavorite);
+                  scaffold.hideCurrentSnackBar();
+                  _product.isFavorite
+                      ? scaffold.showSnackBar(SnackBar(
+                          content:
+                              Text("${_product.title} removed from Favorite")))
+                      : scaffold.showSnackBar(SnackBar(
+                          content:
+                              Text("${_product.title} added to Favorite")));
+                } catch (ex) {
+                  scaffold.hideCurrentSnackBar();
+                  scaffold.showSnackBar(SnackBar(content: Text(ex.toString())));
+                }
               },
               icon: Icon(_product.isFavorite
                   ? Icons.favorite
@@ -50,23 +62,26 @@ class ProductItem extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           trailing: IconButton(
-            onPressed: () {
-              _cart.addItem(_product.id, _product.price, _product.title);
-              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text(
-                    'Item added to cart',
-                    textAlign: TextAlign.center,
+            onPressed: () async {
+              await _cart
+                  .addItem(_product.id, _product.price, _product.title)
+                  .then((_) {
+                scaffold.hideCurrentSnackBar();
+                scaffold.showSnackBar(
+                  SnackBar(
+                    content: const Text(
+                      'Item added to cart',
+                      textAlign: TextAlign.center,
+                    ),
+                    duration: Duration(seconds: 2),
+                    action: SnackBarAction(
+                        label: 'UNDO',
+                        onPressed: () async {
+                          await _cart.removeSingleItem(_product.id);
+                        }),
                   ),
-                  duration: Duration(seconds: 2),
-                  action: SnackBarAction(
-                    label: 'UNDO',
-                     onPressed: () {
-                       _cart.removeSingleItem(_product.id);
-                     }),
-                ),
-              );
+                );
+              });
             },
             icon: Icon(Icons.shopping_cart),
             color: Theme.of(context).accentColor,

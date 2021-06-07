@@ -34,8 +34,8 @@ class CartItemW extends StatelessWidget {
                 ));
       },
       direction: DismissDirection.endToStart,
-      onDismissed: (direction) {
-        Provider.of<Cart>(context, listen: false).removeItem(productId);
+      onDismissed: (direction) async{
+        await Provider.of<Cart>(context, listen: false).removeItem(productId);
       },
       background: Container(
         color: Theme.of(context).errorColor,
