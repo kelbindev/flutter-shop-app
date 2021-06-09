@@ -1,8 +1,6 @@
 # shop_app
 
-an app to familiarize myself with state management
+simple shopping app with flutter & firebase
 
-good practices for managing states
-
-when to use provider vs stateful widget
+#flutter #firebase #dart
 
