@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shop_app/providers/auth.dart';
 import 'package:shop_app/screens/carts.dart';
 import 'package:shop_app/screens/orders.dart';
 import 'package:shop_app/screens/user_products.dart';
@@ -22,19 +24,6 @@ class MainDrawer extends StatelessWidget {
               title: Text('Menu'),
               automaticallyImplyLeading: false,
             ),
-            // Container(
-            //   alignment: Alignment.centerLeft,
-            //   padding: EdgeInsets.all(15),
-            //   width: double.infinity,
-            //   height: 80,
-            //   color: Theme.of(context).primaryColor,
-            //   child: const Text('Menu',
-            //   style: TextStyle(
-            //     color: Colors.white,
-            //     fontSize: 28,
-            //     fontWeight: FontWeight.bold
-            //   ),),
-            // ),
             Expanded(
               child: ListView(
                 children: [
@@ -67,6 +56,16 @@ class MainDrawer extends StatelessWidget {
                   'Products',
                   () {
                     Navigator.of(context).pushReplacementNamed(UserProducts.routeName);
+                  }
+                ),
+                Divider(),
+                buildListTile(
+                  Icons.exit_to_app,
+                  'Logout',
+                  () {
+                    Navigator.of(context).pop();
+                     Navigator.of(context).pushReplacementNamed('/');
+                    Provider.of<Auth>(context,listen: false).logout();
                   }
                 ),
               ],),

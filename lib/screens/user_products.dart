@@ -9,12 +9,12 @@ class UserProducts extends StatelessWidget {
   static const routeName = '/user-products';
 
   Future<void> _refreshProducts(BuildContext context) async {
-    await Provider.of<Products>(context, listen: false).fetchAndSetProduct();
+    await Provider.of<Products>(context, listen: false).fetchAndSetProduct(true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final _product = Provider.of<Products>(context);
+    // final _product = Provider.of<Products>(context);
     return Scaffold(
       drawer: MainDrawer(),
       appBar: AppBar(
@@ -24,17 +24,24 @@ class UserProducts extends StatelessWidget {
                 arguments: '');
         }, icon: Icon(Icons.add))],
       ),
-      body: RefreshIndicator(
-        onRefresh: () => _refreshProducts(context),
-        child: Padding(
-          padding: EdgeInsets.all(8),
-          child: ListView.builder(
-            itemCount: _product.items.length,
-            itemBuilder: (ctx, i) => Column(
-              children: [
-                Divider(),
-                UserProductItem(_product.items[i]),
-              ],
+      body: FutureBuilder(
+        future: _refreshProducts(context),
+        builder: (ctx, snapshot) => 
+        snapshot.connectionState == ConnectionState.waiting ? Center(child: CircularProgressIndicator(),) 
+        : RefreshIndicator(
+          onRefresh: () => _refreshProducts(context),
+          child: Consumer<Products>(
+            builder: (ctx,productsData, _)=>  Padding(
+              padding: EdgeInsets.all(8),
+              child: ListView.builder(
+                itemCount: productsData.items.length,
+                itemBuilder: (ctx, i) => Column(
+                  children: [
+                    Divider(),
+                    UserProductItem(productsData.items[i]),
+                  ],
+                ),
+              ),
             ),
           ),
         ),

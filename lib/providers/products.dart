@@ -6,7 +6,17 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class Products with ChangeNotifier {
+  String authToken;
+  String userId;
   List<Product> _items = [];
+
+  Products(this.authToken, this.userId, this._items);
+
+  void updateUser(String token, String id) {
+    this.userId = id;
+    this.authToken = token;
+    notifyListeners();
+  }
 
   List<Product> get items {
     return [..._items];
@@ -20,11 +30,18 @@ class Products with ChangeNotifier {
     return _items.firstWhere((e) => e.id == productId);
   }
 
-  Future<void> fetchAndSetProduct() async {
+  Future<void> fetchAndSetProduct([bool filterUser = false]) async {
+    final filterString =
+        filterUser ? '&orderBy="creatorId"&equalTo="$userId"' : '';
+
     final url = Uri.parse(
-        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/products.json');
+        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/products.json?auth=$authToken$filterString');
+    final favoriteUrl = Uri.parse(
+        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/userFavorites/$userId.json?auth=$authToken');
     try {
       final response = await http.get(url);
+      final favoriteReponse = await http.get(favoriteUrl);
+      final favoriteData = json.decode(favoriteReponse.body);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
       List<Product> loadedData = [];
       extractedData.forEach((prodId, prodData) {
@@ -33,7 +50,8 @@ class Products with ChangeNotifier {
             title: prodData['title'],
             description: prodData['description'],
             imageUrl: prodData['imageUrl'],
-            isFavorite: prodData['isFavorite'],
+            isFavorite:
+                favoriteData == null ? false : favoriteData[prodId] ?? false,
             price: prodData['price']));
       });
 
@@ -47,7 +65,7 @@ class Products with ChangeNotifier {
 
   Future<void> addProduct(Product _newProduct) async {
     final url = Uri.parse(
-        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/products.json');
+        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/products.json?auth=$authToken');
 
     try {
       final response = await http.post(url,
@@ -56,7 +74,8 @@ class Products with ChangeNotifier {
             'description': _newProduct.description,
             'imageUrl': _newProduct.imageUrl,
             'price': _newProduct.price,
-            'isFavorite': _newProduct.isFavorite
+            'creatorId': userId
+            // 'isFavorite': _newProduct.isFavorite
           }));
 
       var res = json.decode(response.body);
@@ -83,7 +102,7 @@ class Products with ChangeNotifier {
 
     if (_prodIndex > 0) {
       final url = Uri.parse(
-          'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/products/${_editedProduct.id}.json');
+          'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/products/${_editedProduct.id}.json?auth=$authToken');
 
       await http.patch(url,
           body: json.encode({
@@ -99,7 +118,7 @@ class Products with ChangeNotifier {
 
   Future<void> deleteProduct(String _productId) async {
     final url = Uri.parse(
-        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/products/${_productId}.json');
+        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/products/$_productId.json?auth=$authToken');
     var existingProduct = _items.firstWhere((e) => e.id == _productId);
     _items.removeWhere((e) => e.id == _productId);
     notifyListeners();
@@ -107,21 +126,23 @@ class Products with ChangeNotifier {
     final response = await http.delete(url);
 
     if (response.statusCode >= 400) {
+      print(response.body);
       _items.add(existingProduct);
       notifyListeners();
       throw HttpException('could not delete product.');
     }
   }
 
-  Future<void> toggleFavorite(String _productId, bool isFavorite) async {
+  Future<void> toggleFavorite(
+      String _productId, bool isFavorite, String _userId) async {
     var _product = _items.firstWhere((e) => e.id == _productId);
 
     final url = Uri.parse(
-        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/products/$_productId.json');
+        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/userFavorites/$_userId/$_productId.json?auth=$authToken');
 
-    final response = await http.patch(url, body: json.encode({'isFavorite': !isFavorite}));
+    final response = await http.put(url, body: json.encode(!isFavorite));
 
-     if (response.statusCode >= 400) {
+    if (response.statusCode >= 400) {
       notifyListeners();
       throw HttpException('could not change item Favorite.');
     }

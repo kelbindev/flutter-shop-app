@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_app/providers/auth.dart';
 import 'package:shop_app/providers/cart.dart';
 import 'package:shop_app/providers/product.dart';
 import 'package:shop_app/providers/products.dart';
@@ -9,8 +10,8 @@ class ProductItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _product = Provider.of<Product>(context, listen: false);
-    final _productsFunction = Provider.of<Products>(context, listen: false);
     final _cart = Provider.of<Cart>(context, listen: false);
+    final _authData = Provider.of<Auth>(context, listen: false);
 
     final scaffold = ScaffoldMessenger.of(context);
 
@@ -36,7 +37,7 @@ class ProductItem extends StatelessWidget {
               onPressed: () async {
                 try {
                   _productsFunction.toggleFavorite(
-                      _product.id, _product.isFavorite);
+                      _product.id, _product.isFavorite,_authData.userId);
                   scaffold.hideCurrentSnackBar();
                   _product.isFavorite
                       ? scaffold.showSnackBar(SnackBar(

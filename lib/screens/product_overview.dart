@@ -15,6 +15,8 @@ bool _isInit = true;
 bool _isLoading = false;
 
 class ProductsOverview extends StatefulWidget {
+  static const routeName = '/product-overview';
+
   @override
   _ProductsOverviewState createState() => _ProductsOverviewState();
 }

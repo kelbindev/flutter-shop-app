@@ -19,19 +19,23 @@ class OrderItem {
 }
 
 class Order with ChangeNotifier {
-  List<OrderItem> _orders = [];
+  List<OrderItem> orders = [];
+  final String authToken;
+  final String userId;
+
+  Order(this.authToken,this.userId,this.orders);
 
   List<OrderItem> get getOrders {
-    return [..._orders];
+    return [...orders];
   }
 
   int get getOrdersCount {
-    return _orders.length;
+    return orders.length;
   }
 
   Future<void> fetchAndSetOrder() async {
     final url = Uri.parse(
-        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json');
+        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/orders/$userId.json?auth=$authToken');
     try {
       final response = await http.get(url);
       if (response.body.toString() == "null"){
@@ -56,7 +60,7 @@ class Order with ChangeNotifier {
                 .toList()));
       });
 
-      _orders = _loadedData.reversed.toList();
+      orders = _loadedData.reversed.toList();
 
       notifyListeners();
     } catch (error) {
@@ -65,11 +69,11 @@ class Order with ChangeNotifier {
   }
 
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
-    String newid = "ci" + (_orders.length + 1).toString();
+    String newid = "ci" + (orders.length + 1).toString();
     final timeStamp = DateTime.now();
 
     final url = Uri.parse(
-        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json');
+        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/orders/$userId.json?auth=$authToken');
 
     final response = await http.post(url,
         body: json.encode({
@@ -91,7 +95,7 @@ class Order with ChangeNotifier {
       throw HttpException('could not submit order.');
     }
 
-    _orders.add(OrderItem(
+    orders.add(OrderItem(
         id: json.decode(response.body)['name'],
         amount: total,
         products: cartProducts,

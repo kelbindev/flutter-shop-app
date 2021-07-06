@@ -18,19 +18,27 @@ class CartItem {
 }
 
 class Cart with ChangeNotifier {
-  Map<String, CartItem> _items = {};
+  String authToken;
+  Map<String, CartItem> items = {};
+
+  Cart(this.authToken,this.items);
+
+  void updateUser(String token) {
+    this.authToken = token;
+    notifyListeners();
+  }
 
   Map<String, CartItem> get getItems {
-    return {..._items};
+    return {...items};
   }
 
   int get itemCount {
-    return _items.isEmpty ? 0 : _items.length;
+    return items.isEmpty ? 0 : items.length;
   }
 
   double get totalAmount {
     double total = 0.0;
-    _items.forEach((key, value) {
+    items.forEach((key, value) {
       total += value.price * value.qty;
     });
     return total;
@@ -38,7 +46,7 @@ class Cart with ChangeNotifier {
 
   Future<void> fetchAndSetCart() async {
     final url = Uri.parse(
-        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/cart.json');
+        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/cart.json?auth=$authToken');
     try {
       final response = await http.get(url);
       print(response);
@@ -46,7 +54,7 @@ class Cart with ChangeNotifier {
         final extractedData =
             json.decode(response.body) as Map<String, dynamic>;
         extractedData.forEach((cartId, cartData) {
-          _items.putIfAbsent(
+          items.putIfAbsent(
               cartId,
               () => CartItem(
                   id: cartData['productId'],
@@ -64,19 +72,19 @@ class Cart with ChangeNotifier {
 
   Future<void> addItem(String productId, double price, String title) async {
     try {
-      if (_items.containsKey(productId)) {
+      if (items.containsKey(productId)) {
         final url = Uri.parse(
-            'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/cart/$productId.json');
+            'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/cart/$productId.json?auth=$authToken');
 
         final response = await http.patch(url,
-            body: json.encode({'qty': _items[productId]!.qty + 1}));
+            body: json.encode({'qty': items[productId]!.qty + 1}));
 
         if (response.statusCode >= 400) {
           notifyListeners();
           throw HttpException('could not update cart.');
         }
 
-        _items.update(
+        items.update(
             productId,
             (value) => CartItem(
                 id: value.id,
@@ -87,7 +95,7 @@ class Cart with ChangeNotifier {
         notifyListeners();
       } else {
         final url = Uri.parse(
-            'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/cart/$productId.json');
+            'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/cart/$productId.json?auth=$authToken');
 
         final response = await http.put(url,
             body: json.encode({
@@ -105,7 +113,7 @@ class Cart with ChangeNotifier {
           throw HttpException('could not add item to cart.');
         }
 
-        _items.putIfAbsent(productId,
+        items.putIfAbsent(productId,
             () => CartItem(id: productId, title: title, qty: 1, price: price));
 
         notifyListeners();
@@ -117,18 +125,18 @@ class Cart with ChangeNotifier {
 
   Future<void> removeSingleItem(String productId) async {
     final url = Uri.parse(
-        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/cart/$productId.json');
+        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/cart/$productId.json?auth=$authToken');
 
-    if (_items[productId]!.qty > 1) {
+    if (items[productId]!.qty > 1) {
       final response = await http.patch(url,
-          body: json.encode({'qty': _items[productId]!.qty - 1}));
+          body: json.encode({'qty': items[productId]!.qty - 1}));
 
       if (response.statusCode >= 400) {
         notifyListeners();
         throw HttpException('could not update cart.');
       }
 
-      _items.update(
+      items.update(
           productId,
           (value) => CartItem(
               id: value.id,
@@ -143,7 +151,7 @@ class Cart with ChangeNotifier {
         throw HttpException('could not delete product.');
       }
 
-      _items.remove(productId);
+      items.remove(productId);
     }
 
     notifyListeners();
@@ -151,7 +159,7 @@ class Cart with ChangeNotifier {
 
   Future<void> removeItem(String productId) async {
     final url = Uri.parse(
-        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/cart/$productId.json');
+        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/cart/$productId.json?auth=$authToken');
 
     final response = await http.delete(url);
 
@@ -160,13 +168,13 @@ class Cart with ChangeNotifier {
       throw HttpException('could not remove product from cart.');
     }
 
-    _items.remove(productId);
+  items.remove(productId);
     notifyListeners();
   }
 
   Future<void> clearCart() async {
     final url = Uri.parse(
-        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/cart.json');
+        'https://shop-app-f45aa-default-rtdb.asia-southeast1.firebasedatabase.app/cart.json?auth=$authToken');
 
     final response = await http.delete(url);
 
@@ -175,7 +183,7 @@ class Cart with ChangeNotifier {
       throw HttpException('could not remove product from cart.');
     }
 
-    _items = {};
+    items = {};
     notifyListeners();
   }
 }
