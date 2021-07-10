@@ -20,9 +20,12 @@ class ProductItem extends StatelessWidget {
       child: GridTile(
         header: Text(_product.title),
         child: GestureDetector(
-          child: Image.network(
-            _product.imageUrl,
-            fit: BoxFit.cover,
+          child: Hero(
+            tag: _product.id,
+            child: FadeInImage(
+                placeholder: AssetImage('assets/images/product-placeholder.png'),
+                image: NetworkImage(_product.imageUrl),
+                fit: BoxFit.cover,),
           ),
           onTap: () {
             Navigator.of(context).pushNamed(
@@ -37,7 +40,7 @@ class ProductItem extends StatelessWidget {
               onPressed: () async {
                 try {
                   _productsFunction.toggleFavorite(
-                      _product.id, _product.isFavorite,_authData.userId);
+                      _product.id, _product.isFavorite, _authData.userId);
                   scaffold.hideCurrentSnackBar();
                   _product.isFavorite
                       ? scaffold.showSnackBar(SnackBar(
